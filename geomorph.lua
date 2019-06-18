@@ -7,6 +7,7 @@ local mod = geomorph
 local mod_name = 'geomorph'
 local math_min = math.min
 local math_max = math.max
+local math_floor = math.floor
 
 
 local null_vector = {x = 1, y = 1, z = 1}
@@ -303,7 +304,9 @@ function Geomorph:write_cube(shape, mgen, rot)
 
 	local p2 = shape.param2
 	if p2 then
-		p2 = (p2 + rot) % 4
+		local rp2 = p2 % 32
+		local extra = math_floor(p2 / 32)
+		p2 = (rp2 + rot) % 4 + extra * 32
 	end
 
 	local hmin, hmax
@@ -333,7 +336,7 @@ function Geomorph:write_cube(shape, mgen, rot)
 			for y = min.y, top_y do
 				local hollow_y_good = (not hollow or y <= hmin.y or y >= hmax.y)
 				local ok = (hollow_z_good or hollow_x_good or hollow_y_good)
-				ok = (ok and (not random or mgen.gpr:next(1, random) == 1))
+				ok = (ok and (not random or mgen.gpr:next(1, math_max(1, random)) == 1))
 
 				if ok then
 					if not intersect
@@ -372,7 +375,9 @@ function Geomorph:write_sphere(shape, mgen, rot)
 
 	local p2 = shape.param2
 	if p2 then
-		p2 = (p2 + rot) % 4
+		local rp2 = p2 % 32
+		local extra = math_floor(p2 / 32)
+		p2 = (rp2 + rot) % 4 + extra * 32
 	end
 
 	local radius = math.max(shape.size.x, shape.size.y, shape.size.z) / 2
@@ -380,8 +385,6 @@ function Geomorph:write_sphere(shape, mgen, rot)
 	local center = vector.divide(vector.add(min, max), 2)
 	local proportions = vector.divide(vector.subtract(max, vector.subtract(min, 1)), radius * 2)
 	local h_radius, h_radius_s
-	--print(dump(min), dump(max))
-	--print(radius, dump(center), dump(proportions))
 
 	if shape.hollow then
 		h_radius = radius - shape.hollow
@@ -414,7 +417,7 @@ function Geomorph:write_sphere(shape, mgen, rot)
 				local radius_good = (dist <= radius_s)
 				local hollow_good = (not h_radius or dist > h_radius_s)
 
-				local ok = (not random or mgen.gpr:next(1, random) == 1)
+				local ok = (not random or mgen.gpr:next(1, math_max(1, random)) == 1)
 				if ok and radius_good and hollow_good then
 					if not intersect
 					or (type(intersect) == 'table' and intersect[data[ivm]])
@@ -568,7 +571,12 @@ function Geomorph:write_stair(shape, mgen, rot)
 	local node_num = mgen.node[shape.node]
 	local underground = shape.underground
 	local depth_fill = shape.depth_fill
-	local p2 = (shape.param2 + rot) % 4
+	local p2 = shape.param2
+	if p2 then
+		local rp2 = p2 % 32
+		local extra = math_floor(p2 / 32)
+		p2 = (rp2 + rot) % 4 + extra * 32
+	end
 	local depth = (shape.depth and shape.depth > -1) and shape.depth
 	local s_hi = (shape.height and shape.height > 0) and shape.height or 2
 
@@ -679,7 +687,7 @@ end
 
 function Geomorph:write_puzzle(shape, mgen, rot)
 	local chance = shape.chance or 20
-	if mgen.gpr:next(1, chance) == 1 then
+	if mgen.gpr:next(1, math_max(1, chance)) == 1 then
 		self:write_match_three(shape, mgen, rot)
 
 		local l = vector.add(shape.location, vector.floor(vector.divide(shape.size, 2)))
