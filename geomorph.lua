@@ -306,7 +306,10 @@ function Geomorph:write_cube(shape, mgen, rot)
 	if p2 then
 		local rp2 = p2 % 32
 		local extra = math_floor(p2 / 32)
-		p2 = (rp2 + rot) % 4 + extra * 32
+		if rot ~= 0 then
+			rp2 = (rp2 + rot) % 4
+		end
+		p2 = rp2 + extra * 32
 	end
 
 	local hmin, hmax
@@ -324,7 +327,7 @@ function Geomorph:write_cube(shape, mgen, rot)
 			local top_y = max.y
 
 			if underground then
-				local height = heightmap[index]
+				local height = heightmap[index] - minp.y
 				if height then
 					top_y = math_min(max.y, height - underground)
 				end
@@ -377,7 +380,10 @@ function Geomorph:write_sphere(shape, mgen, rot)
 	if p2 then
 		local rp2 = p2 % 32
 		local extra = math_floor(p2 / 32)
-		p2 = (rp2 + rot) % 4 + extra * 32
+		if rot ~= 0 then
+			rp2 = (rp2 + rot) % 4
+		end
+		p2 = rp2 + extra * 32
 	end
 
 	local radius = math.max(shape.size.x, shape.size.y, shape.size.z) / 2
@@ -400,7 +406,7 @@ function Geomorph:write_sphere(shape, mgen, rot)
 			local top_y = max.y
 
 			if underground then
-				local height = heightmap[index]
+				local height = heightmap[index] - minp.y
 				if height then
 					top_y = math_min(max.y, height - underground)
 				end
@@ -494,7 +500,7 @@ function Geomorph:write_cylinder(shape, mgen, rot)
 			local top_y = max.y
 
 			if underground then
-				local height = heightmap[index]
+				local height = heightmap[index] - minp.y
 				if height then
 					top_y = math_min(max.y, height - underground)
 				--elseif min.y > -32 then
@@ -575,7 +581,10 @@ function Geomorph:write_stair(shape, mgen, rot)
 	if p2 then
 		local rp2 = p2 % 32
 		local extra = math_floor(p2 / 32)
-		p2 = (rp2 + rot) % 4 + extra * 32
+		if rot ~= 0 then
+			rp2 = (rp2 + rot) % 4
+		end
+		p2 = rp2 + extra * 32
 	end
 	local depth = (shape.depth and shape.depth > -1) and shape.depth
 	local s_hi = (shape.height and shape.height > 0) and shape.height or 2
@@ -590,7 +599,7 @@ function Geomorph:write_stair(shape, mgen, rot)
 			local top_y = max.y
 
 			if underground then
-				local height = heightmap[index]
+				local height = heightmap[index] - minp.y
 				if height then
 					top_y = math_min(max.y, height - underground)
 				end
@@ -666,7 +675,7 @@ function Geomorph:write_ladder(shape, mgen, rot)
 			local top_y = max.y
 
 			if underground then
-				local height = heightmap[index]
+				local height = heightmap[index] - minp.y
 				if height then
 					top_y = math_min(max.y, height - underground)
 				end
