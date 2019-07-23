@@ -187,6 +187,7 @@ function Geomorph:create_shape(t)
 			location = location,
 			node = t.node,
 			param2 = param2,
+			pattern = t.pattern,
 			random = t.random,
 			size = t.size,
 			underground = t.underground,
@@ -299,6 +300,7 @@ function Geomorph:write_cube(shape, mgen, rot)
 	local hollow = shape.hollow
 	local random = shape.random
 	local intersect = shape.intersect
+	local pattern = shape.pattern
 
 	local n_air = mgen.node['air']
 
@@ -318,10 +320,19 @@ function Geomorph:write_cube(shape, mgen, rot)
 		hmax = vector.subtract(max, hollow)
 	end
 
+	local pattern_fail_x, pattern_fail_y, pattern_fail_z
 	for z = min.z, max.z do
+		if pattern == 1 and math_floor(z / 2) % 2 == 1 then
+			pattern_fail_z = true
+		end
+
 		local index = z * csize.x + min.x + 1
 		local hollow_z_good = (not hollow or z <= hmin.z or z >= hmax.z)
 		for x = min.x, max.x do
+			if pattern == 1 and math_floor(x / 2) % 2 == 1 then
+				pattern_fail_x = true
+			end
+
 			local hollow_x_good = (not hollow or x <= hmin.x or x >= hmax.x)
 			local ivm = area:index(minp.x + x, minp.y + min.y, minp.z + z)
 			local top_y = max.y
@@ -339,7 +350,7 @@ function Geomorph:write_cube(shape, mgen, rot)
 			for y = min.y, top_y do
 				local hollow_y_good = (not hollow or y <= hmin.y or y >= hmax.y)
 				local ok = (hollow_z_good or hollow_x_good or hollow_y_good)
-				ok = (ok and (not random or mgen.gpr:next(1, math_max(1, random)) == 1))
+				ok = (ok and (not (pattern_fail_x or pattern_fail_y or pattern_fail_z)) and (not random or mgen.gpr:next(1, math_max(1, random)) == 1))
 
 				if ok then
 					if not intersect
@@ -350,11 +361,14 @@ function Geomorph:write_cube(shape, mgen, rot)
 					end
 				end
 
+				pattern_fail_y = nil
 				ivm = ivm + ystride
 			end
 
+			pattern_fail_x = nil
 			index = index + 1
 		end
+		pattern_fail_z = nil
 	end
 end
 
